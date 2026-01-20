@@ -104,12 +104,14 @@ export default function ChatScreen({ navigation }) {
             <MaterialIcons name="person" size={24} color="#9C27B9" />
           </View>
         )}
-        {item.isOnline && <View style={styles.onlineIndicator} />}
       </View>
       
       <View style={styles.conversationInfo}>
         <View style={styles.conversationHeader}>
-          <Text style={styles.conversationName}>{item.name}</Text>
+          <View style={styles.conversationNameRow}>
+            {item.isOnline && <View style={styles.onlineIndicator} />}
+            <Text style={styles.conversationName}>{item.name}</Text>
+          </View>
           <Text style={styles.conversationTime}>{item.time}</Text>
         </View>
         <Text style={styles.conversationMessage} numberOfLines={1}>
@@ -184,37 +186,40 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    marginHorizontal: 16,
     marginBottom: 16,
+    backgroundColor: '#3d3d5c',
+    borderRadius: 25,
+    padding: 3,
+    alignSelf: 'flex-start',
   },
   tab: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginRight: 8,
+    backgroundColor: 'transparent',
   },
   tabActive: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0d0d1a',
   },
   tabText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 13,
   },
   tabTextActive: {
-    color: '#0A0A23',
-    fontWeight: '600',
+    color: '#fff',
+    fontWeight: '500',
   },
   solicitudesButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
+    justifyContent: 'flex-end',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 10,
   },
   solicitudesText: {
-    color: 'rgba(255,255,255,0.5)',
+    color: '#CE93D8',
     fontSize: 14,
   },
   conversationsList: {
@@ -222,41 +227,38 @@ const styles = StyleSheet.create({
   },
   conversationsContent: {
     paddingHorizontal: 16,
+    paddingBottom: 100,
   },
   conversationItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    padding: 12,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 16,
+    marginBottom: 10,
   },
   avatarContainer: {
-    position: 'relative',
     marginRight: 12,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#2a2a4e',
     justifyContent: 'center',
     alignItems: 'center',
   },
   onlineIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#4CAF50',
-    borderWidth: 2,
-    borderColor: '#0A0A23',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF9800',
+    marginRight: 6,
   },
   conversationInfo: {
     flex: 1,
@@ -267,31 +269,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+  conversationNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   conversationName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#fff',
   },
   conversationTime: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.4)',
   },
   conversationMessage: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
   },
   unreadBadge: {
-    backgroundColor: '#E91E63',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    backgroundColor: '#BA68C8',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
   },
   unreadText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
 });

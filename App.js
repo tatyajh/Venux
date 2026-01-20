@@ -36,26 +36,44 @@ function MainTabNavigator() {
           if (route.name === 'Home') {
             iconName = 'home';
           } else if (route.name === 'Explore') {
-            iconName = 'people';
+            iconName = 'person-outline';
           } else if (route.name === 'Matches') {
-            iconName = 'mail';
+            iconName = 'mail-outline';
           } else if (route.name === 'Chat') {
-            iconName = 'chat-bubble';
+            iconName = 'chat-bubble-outline';
           } else if (route.name === 'Profile') {
-            iconName = 'favorite';
+            iconName = 'favorite-border';
           }
 
-          return <MaterialIcons name={iconName} size={24} color={focused ? '#E91E63' : 'rgba(255,255,255,0.5)'} />;
+          if (focused) {
+            return (
+              <View style={{
+                backgroundColor: '#BA68C8',
+                borderRadius: 22,
+                width: 44,
+                height: 44,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <MaterialIcons name={iconName} size={20} color="#fff" />
+              </View>
+            );
+          }
+          return <MaterialIcons name={iconName} size={20} color="rgba(255,255,255,0.4)" />;
         },
-        tabBarActiveTintColor: '#E91E63',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarActiveTintColor: '#BA68C8',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#0A0A23',
+          backgroundColor: '#0d0d18',
           borderTopWidth: 0,
-          paddingBottom: 25,
-          paddingTop: 10,
-          height: 80,
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 65,
+          marginHorizontal: 12,
+          marginBottom: 15,
+          borderRadius: 40,
+          position: 'absolute',
         },
         headerShown: false,
       })}

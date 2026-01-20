@@ -1,117 +1,128 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  TextInput,
   TouchableOpacity,
   Image,
   SafeAreaView,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform,
+  ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
-// Datos de ejemplo para los mensajes
-const mockMessages = [
+// Datos de ejemplo para las conversaciones
+const mockConversations = [
   {
     id: 1,
-    text: '¡Hola! Me encanta tu perfil 😊',
-    isMe: false,
-    timestamp: '10:30',
+    name: 'Ana & Carlos',
+    lastMessage: '¡Nos encantaría conocerte mej...',
+    time: '03:30 P.M.',
+    unread: 3,
+    photo: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=100',
+    isOnline: true,
   },
   {
     id: 2,
-    text: '¡Hola! Muchas gracias, el tuyo también está genial',
-    isMe: true,
-    timestamp: '10:32',
+    name: 'María',
+    lastMessage: 'Gracias por tu mensaje, me pa...',
+    time: '02:00 P.M.',
+    unread: 1,
+    photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+    isOnline: false,
   },
   {
     id: 3,
-    text: '¿Te gusta la música? Veo que tienes muchas fotos en conciertos',
-    isMe: false,
-    timestamp: '10:35',
+    name: 'Luis & Patricia',
+    lastMessage: '¿Están disponibles este fin de...',
+    time: '10:00 A.M.',
+    unread: 2,
+    photo: 'https://images.unsplash.com/photo-1522556189639-b150ed9c4330?w=100',
+    isOnline: true,
   },
   {
     id: 4,
-    text: '¡Sí! Soy muy fan de la música indie. ¿Y tú qué tipo de música escuchas?',
-    isMe: true,
-    timestamp: '10:37',
+    name: 'Sofia',
+    lastMessage: 'Nos vemos entonces! 💜',
+    time: '07:45 P.M.',
+    unread: 0,
+    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+    isOnline: false,
   },
   {
     id: 5,
-    text: 'Me encanta el rock alternativo y el pop. ¿Te gustaría ir a un concierto juntos algún día?',
-    isMe: false,
-    timestamp: '10:40',
+    name: 'Roberto & Julia',
+    lastMessage: 'Perfecto, quedamos confirma...',
+    time: '04:20 P.M.',
+    unread: 0,
+    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+    isOnline: false,
   },
   {
     id: 6,
-    text: '¡Me encantaría! Eso suena perfecto 🎵',
-    isMe: true,
-    timestamp: '10:42',
+    name: 'Valentina',
+    lastMessage: 'Me encanta tu perfil!',
+    time: '11:30 A.M.',
+    unread: 0,
+    photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100',
+    isOnline: true,
+  },
+  {
+    id: 7,
+    name: 'Diego & Laura',
+    lastMessage: 'Sí, estamos interesados',
+    time: '08:15 P.M.',
+    unread: 0,
+    photo: null,
+    isOnline: false,
   },
 ];
 
-export default function ChatScreen({ route, navigation }) {
-  const { match } = route.params || {};
-  const [messages, setMessages] = useState(mockMessages);
-  const [newMessage, setNewMessage] = useState('');
-  const flatListRef = useRef(null);
+const TABS = ['Todos', 'Leídos', 'No leídos'];
 
-  useEffect(() => {
-    // Scroll to bottom when component mounts
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, []);
+export default function ChatScreen({ navigation }) {
+  const [activeTab, setActiveTab] = useState('Todos');
+  const [conversations] = useState(mockConversations);
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      const message = {
-        id: messages.length + 1,
-        text: newMessage.trim(),
-        isMe: true,
-        timestamp: new Date().toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      };
-      setMessages([...messages, message]);
-      setNewMessage('');
-      
-      // Scroll to bottom after sending message
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
+  const getFilteredConversations = () => {
+    if (activeTab === 'Leídos') return conversations.filter(c => c.unread === 0);
+    if (activeTab === 'No leídos') return conversations.filter(c => c.unread > 0);
+    return conversations;
   };
 
-  const renderMessage = ({ item }) => (
-    <View style={[
-      styles.messageContainer,
-      item.isMe ? styles.myMessageContainer : styles.otherMessageContainer
-    ]}>
-      <View style={[
-        styles.messageBubble,
-        item.isMe ? styles.myMessageBubble : styles.otherMessageBubble
-      ]}>
-        <Text style={[
-          styles.messageText,
-          item.isMe ? styles.myMessageText : styles.otherMessageText
-        ]}>
-          {item.text}
-        </Text>
-        <Text style={[
-          styles.messageTime,
-          item.isMe ? styles.myMessageTime : styles.otherMessageTime
-        ]}>
-          {item.timestamp}
+  const renderConversation = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.conversationItem}
+      onPress={() => {/* Navigate to chat */}}
+    >
+      <View style={styles.avatarContainer}>
+        {item.photo ? (
+          <Image source={{ uri: item.photo }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <MaterialIcons name="person" size={24} color="#9C27B9" />
+          </View>
+        )}
+        {item.isOnline && <View style={styles.onlineIndicator} />}
+      </View>
+      
+      <View style={styles.conversationInfo}>
+        <View style={styles.conversationHeader}>
+          <Text style={styles.conversationName}>{item.name}</Text>
+          <Text style={styles.conversationTime}>{item.time}</Text>
+        </View>
+        <Text style={styles.conversationMessage} numberOfLines={1}>
+          {item.lastMessage}
         </Text>
       </View>
-    </View>
+      
+      {item.unread > 0 && (
+        <View style={styles.unreadBadge}>
+          <Text style={styles.unreadText}>{item.unread}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 
   return (
@@ -119,85 +130,40 @@ export default function ChatScreen({ route, navigation }) {
       <StatusBar barStyle="light-content" />
       
       {/* Header */}
-      <LinearGradient
-        colors={['#E91E63', '#F06292']}
-        style={styles.header}
-      >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        
-        <View style={styles.headerInfo}>
-          <Image
-            source={{ uri: match?.photo || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100' }}
-            style={styles.headerPhoto}
-          />
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerName}>
-              {match?.name || 'Sofia'}
-            </Text>
-            <Text style={styles.headerStatus}>
-              {match?.isOnline ? 'En línea' : 'Última vez hace 2 min'}
-            </Text>
-          </View>
-        </View>
-        
-        <TouchableOpacity style={styles.headerButton}>
-          <Icon name="videocam" size={24} color="#fff" />
-        </TouchableOpacity>
-      </LinearGradient>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Mensajes</Text>
+      </View>
 
-      {/* Messages */}
-      <KeyboardAvoidingView
-        style={styles.messagesContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderMessage}
-          style={styles.messagesList}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-        />
-
-        {/* Message Input */}
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.inputButton}>
-            <Icon name="add" size={24} color="#E91E63" />
-          </TouchableOpacity>
-          
-          <View style={styles.textInputContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Escribe un mensaje..."
-              placeholderTextColor="#999"
-              value={newMessage}
-              onChangeText={setNewMessage}
-              multiline
-              maxLength={500}
-            />
-            <TouchableOpacity style={styles.emojiButton}>
-              <Icon name="emoji-emotions" size={24} color="#E91E63" />
-            </TouchableOpacity>
-          </View>
-          
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        {TABS.map((tab) => (
           <TouchableOpacity
-            style={[
-              styles.sendButton,
-              newMessage.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-            ]}
-            onPress={sendMessage}
-            disabled={!newMessage.trim()}
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.tabActive]}
+            onPress={() => setActiveTab(tab)}
           >
-            <Icon name="send" size={20} color="#fff" />
+            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+              {tab}
+            </Text>
           </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+        ))}
+      </View>
+
+      {/* Solicitudes */}
+      <TouchableOpacity style={styles.solicitudesButton}>
+        <Text style={styles.solicitudesText}>Solicitudes (5)</Text>
+        <MaterialIcons name="chevron-right" size={20} color="rgba(255,255,255,0.5)" />
+      </TouchableOpacity>
+
+      {/* Conversations List */}
+      <FlatList
+        data={getFilteredConversations()}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderConversation}
+        style={styles.conversationsList}
+        contentContainerStyle={styles.conversationsContent}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
@@ -205,166 +171,127 @@ export default function ChatScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0A0A23',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  headerInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerPhoto: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  headerTextContainer: {
-    flex: 1,
-  },
-  headerName: {
-    fontSize: 16,
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
-  headerStatus: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
+  tabsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
-  headerButton: {
-    width: 40,
-    height: 40,
+  tab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginRight: 8,
+  },
+  tabActive: {
+    backgroundColor: '#fff',
+  },
+  tabText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+  },
+  tabTextActive: {
+    color: '#0A0A23',
+    fontWeight: '600',
+  },
+  solicitudesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  solicitudesText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+  },
+  conversationsList: {
+    flex: 1,
+  },
+  conversationsContent: {
+    paddingHorizontal: 16,
+  },
+  conversationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  avatarPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#2a2a4e',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  messagesContainer: {
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: '#0A0A23',
+  },
+  conversationInfo: {
     flex: 1,
   },
-  messagesList: {
-    flex: 1,
+  conversationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
-  messagesContent: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  messageContainer: {
-    marginVertical: 4,
-  },
-  myMessageContainer: {
-    alignItems: 'flex-end',
-  },
-  otherMessageContainer: {
-    alignItems: 'flex-start',
-  },
-  messageBubble: {
-    maxWidth: '80%',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  myMessageBubble: {
-    backgroundColor: '#E91E63',
-    borderBottomRightRadius: 5,
-  },
-  otherMessageBubble: {
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  messageText: {
+  conversationName: {
     fontSize: 16,
-    lineHeight: 20,
-  },
-  myMessageText: {
+    fontWeight: '600',
     color: '#fff',
   },
-  otherMessageText: {
-    color: '#333',
+  conversationTime: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
   },
-  messageTime: {
-    fontSize: 11,
-    marginTop: 4,
+  conversationMessage: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
   },
-  myMessageTime: {
-    color: 'rgba(255,255,255,0.7)',
-    textAlign: 'right',
-  },
-  otherMessageTime: {
-    color: '#999',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  inputButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  textInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginRight: 10,
-    minHeight: 40,
-    maxHeight: 100,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    paddingVertical: 5,
-  },
-  emojiButton: {
-    padding: 5,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonActive: {
+  unreadBadge: {
     backgroundColor: '#E91E63',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
   },
-  sendButtonInactive: {
-    backgroundColor: '#ccc',
+  unreadText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

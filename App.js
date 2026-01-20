@@ -35,31 +35,34 @@ function MainTabNavigator() {
 
           if (route.name === 'Home') {
             iconName = 'home';
+          } else if (route.name === 'Explore') {
+            iconName = 'people';
           } else if (route.name === 'Matches') {
-            iconName = 'favorite';
+            iconName = 'mail';
           } else if (route.name === 'Chat') {
-            iconName = 'chat';
+            iconName = 'chat-bubble';
           } else if (route.name === 'Profile') {
-            iconName = 'person';
+            iconName = 'favorite';
           }
 
-          return <MaterialIcons name={iconName} size={size} color={color} />;
+          return <MaterialIcons name={iconName} size={24} color={focused ? '#E91E63' : 'rgba(255,255,255,0.5)'} />;
         },
         tabBarActiveTintColor: '#E91E63',
-        tabBarInactiveTintColor: 'gray',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          backgroundColor: '#0A0A23',
+          borderTopWidth: 0,
+          paddingBottom: 25,
+          paddingTop: 10,
+          height: 80,
         },
         headerShown: false,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Matches" component={MatchesScreen} />
+      <Tab.Screen name="Explore" component={MatchesScreen} />
+      <Tab.Screen name="Matches" component={ChatScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

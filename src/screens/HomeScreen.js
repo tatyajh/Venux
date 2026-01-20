@@ -141,15 +141,12 @@ export default function HomeScreen({ navigation }) {
         
         <MaterialIcons name="favorite" size={32} color="#E91E63" />
         
-        <View style={styles.connectedContainer}>
-          <Text style={styles.connectedText}>Conectado</Text>
-          <TouchableOpacity 
-            style={[styles.toggleSwitch, isConnected && styles.toggleSwitchActive]}
-            onPress={() => setIsConnected(!isConnected)}
-          >
-            <View style={[styles.toggleKnob, isConnected && styles.toggleKnobActive]} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          style={styles.publicChatsButton}
+          onPress={() => navigation.navigate('PublicChats')}
+        >
+          <MaterialIcons name="forum" size={22} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {/* Filters */}
@@ -288,6 +285,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  publicChatsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   connectedContainer: {
     flexDirection: 'row',

@@ -17,6 +17,7 @@ import SplashScreen from './src/screens/SplashScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import PublicChatsScreen from './src/screens/PublicChatsScreen';
 
 // Import stores and supabase
 import { useAuthStore } from './src/store/useAuthStore';
@@ -101,6 +102,7 @@ function AppNavigator() {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Main" component={MainTabNavigator} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="PublicChats" component={PublicChatsScreen} />
     </Stack.Navigator>
   );
 }

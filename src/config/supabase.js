@@ -1,0 +1,2 @@
+export const SUPABASE_URL = 'https://icsaskiressqtogfqleg.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imljc2Fza2lyZXNzcXRvZ2ZxbGVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjIzOTMsImV4cCI6MjA3NjczODM5M30.g_EtBAS8ReaoZljebslSELyG5pykhI_4jpNQy6-jEjo';

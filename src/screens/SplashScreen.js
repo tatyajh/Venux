@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   Dimensions,
-  SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,49 +22,37 @@ export default function SplashScreen({ navigation }) {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
       <View style={styles.gradient}>
         <View style={styles.logoContainer}>
-          {/* Logo con gradiente exacto del Figma */}
+          {/* Logo con gradiente */}
           <View style={styles.heartContainer}>
-            <LinearGradient
-              colors={[
-                '#3D016F',
-                '#5F016F', 
-                '#89016F',
-                '#8D026F',
-                '#9B0671',
-                '#B10D74',
-                '#D11678',
-                '#F9227D',
-                '#FF247E'
-              ]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.heartGradient}
-            >
-              <Icon name="favorite" size={60} color="#fff" />
-            </LinearGradient>
+            <View style={styles.heartGradient}>
+              <MaterialIcons name="favorite" size={60} color="#fff" />
+            </View>
           </View>
           
           <Text style={styles.appName}>venux</Text>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    minHeight: '100%',
+    backgroundColor: '#0A0A23',
   },
   gradient: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0A0A23',
+    minHeight: '100%',
   },
   logoContainer: {
     alignItems: 'center',
@@ -93,6 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#9C27B9',
   },
   appName: {
     fontSize: 42,

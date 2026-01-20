@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,44 +10,110 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Switch,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { sendOtpEmail, verifyOtp } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore';
 
 export default function LoginScreen({ navigation }) {
-  const [isPhoneMode, setIsPhoneMode] = useState(true);
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [countryCode, setCountryCode] = useState('+57');
   const [isLoading, setIsLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const inputRefs = useRef([]);
+  
+  const setUser = useAuthStore((state) => state.setUser);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const handleLogin = async () => {
-    if (isPhoneMode) {
-      if (!phoneNumber) {
-        Alert.alert('Error', 'Por favor ingresa tu número de celular');
-        return;
-      }
-    } else {
-      if (!email) {
-        Alert.alert('Error', 'Por favor ingresa tu correo electrónico');
-        return;
-      }
+  // OTP countdown timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpTimer]);
+
+  // Auto-submit when OTP is complete
+  useEffect(() => {
+    const otpCode = otp.join('');
+    if (otpCode.length === 6 && otpSent && !isLoading) {
+      handleVerifyOtp();
+    }
+  }, [otp, otpSent]);
+
+  const handleSendOtp = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Por favor ingresa tu correo electrónico');
+      return;
     }
 
     setIsLoading(true);
     
-    // Simular login exitoso
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert('¡Bienvenido!', 'Login exitoso', [
-        { text: 'OK', onPress: () => navigation.navigate('Main') }
-      ]);
-    }, 1500);
+    const { error } = await sendOtpEmail(email);
+    
+    if (error) {
+      Alert.alert('Error', error.message || 'Error enviando código');
+    } else {
+      setOtpSent(true);
+      setOtpTimer(60);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    const otpCode = otp.join('');
+    if (otpCode.length !== 6) return;
+
+    setIsLoading(true);
+
+    const { data, error } = await verifyOtp(email, otpCode);
+
+    if (error) {
+      Alert.alert('Error', error.message || 'Código inválido');
+      setOtp(['', '', '', '', '', '']);
+    } else if (data.user && data.session) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email || '',
+        membership: { plan: 'free' },
+        profile: {
+          name: data.user.user_metadata?.name || '',
+          role: data.user.user_metadata?.role || 'single',
+          isOnline: true,
+        },
+      });
+      setAccessToken(data.session.access_token);
+      navigation.replace('Main');
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleOtpChange = (index, value) => {
+    if (value.length > 1) return;
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyPress = (index, key) => {
+    if (key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleSocialLogin = (provider) => {
-    Alert.alert('Login Social', `Login con ${provider} - Funcionalidad en desarrollo`);
+    Alert.alert('Login Social', `Login con ${provider} - Próximamente`);
   };
 
   return (
@@ -79,83 +145,42 @@ export default function LoginScreen({ navigation }) {
                   end={{ x: 1, y: 1 }}
                   style={styles.heartGradient}
                 >
-                  <Icon name="favorite" size={40} color="#fff" />
+                  <MaterialIcons name="favorite" size={40} color="#fff" />
                 </LinearGradient>
               </View>
               <Text style={styles.title}>venux</Text>
             </View>
 
-            {/* Toggle Switch */}
-            <View style={styles.toggleContainer}>
-              <TouchableOpacity
-                style={[styles.toggleButton, isPhoneMode && styles.toggleButtonActive]}
-                onPress={() => setIsPhoneMode(true)}
-              >
-                <Text style={[styles.toggleText, isPhoneMode && styles.toggleTextActive]}>
-                  Celular
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.toggleButton, !isPhoneMode && styles.toggleButtonActive]}
-                onPress={() => setIsPhoneMode(false)}
-              >
-                <Text style={[styles.toggleText, !isPhoneMode && styles.toggleTextActive]}>
-                  Correo
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Input Form */}
-            <View style={styles.inputForm}>
-              {isPhoneMode ? (
-                <>
-                  <View style={styles.countryCodeContainer}>
-                    <View style={styles.flagContainer}>
-                      <Text style={styles.flag}>🇨🇴</Text>
-                    </View>
-                    <Text style={styles.countryCodeText}>+57</Text>
-                    <Icon name="keyboard-arrow-down" size={20} color="#fff" />
-                  </View>
-                  <View style={styles.phoneInputContainer}>
-                    <Icon name="phone" size={20} color="#8B5CF6" style={styles.inputIcon} />
+            {!otpSent ? (
+              <>
+                {/* Input Form - Email */}
+                <View style={styles.inputForm}>
+                  <View style={styles.emailInputContainer}>
+                    <MaterialIcons name="email" size={20} color="#8B5CF6" style={styles.inputIcon} />
                     <TextInput
-                      style={styles.phoneInput}
-                      placeholder="Ingresa tu número"
+                      style={styles.emailInput}
+                      placeholder="Ingresa tu correo"
                       placeholderTextColor="#999"
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      keyboardType="phone-pad"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
                     />
                   </View>
-                </>
-              ) : (
-                <View style={styles.emailInputContainer}>
-                  <Icon name="email" size={20} color="#8B5CF6" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.emailInput}
-                    placeholder="Ingresa tu correo"
-                    placeholderTextColor="#999"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
                 </View>
-              )}
-            </View>
 
-            {/* Action Buttons */}
-            <View style={styles.buttonsContainer}>
-              <TouchableOpacity
-                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                <Text style={styles.loginButtonText}>
-                  {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                </Text>
-              </TouchableOpacity>
+                {/* Action Buttons */}
+                <View style={styles.buttonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                    onPress={handleSendOtp}
+                    disabled={isLoading || !email}
+                  >
+                    <Text style={styles.loginButtonText}>
+                      {isLoading ? 'Enviando código...' : 'Iniciar sesión'}
+                    </Text>
+                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.googleButton}
@@ -166,16 +191,76 @@ export default function LoginScreen({ navigation }) {
                     </View>
                     <Text style={styles.googleButtonText}>Iniciar sesión con Google</Text>
                   </TouchableOpacity>
-            </View>
+                </View>
 
-            {/* Register Link */}
-            <TouchableOpacity 
-              style={styles.registerLinkContainer}
-              onPress={() => navigation.navigate('Register')}
-            >
-              <Text style={styles.registerText}>Crear una cuenta</Text>
-              <Icon name="add" size={20} color="#fff" />
-            </TouchableOpacity>
+                {/* Register Link */}
+                <TouchableOpacity 
+                  style={styles.registerLinkContainer}
+                  onPress={() => navigation.navigate('Register')}
+                >
+                  <Text style={styles.registerText}>Crear una cuenta</Text>
+                  <MaterialIcons name="add" size={20} color="#fff" />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Back Button */}
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => setOtpSent(false)}
+                >
+                  <MaterialIcons name="arrow-back" size={24} color="#fff" />
+                  <Text style={styles.backButtonText}>Atrás</Text>
+                </TouchableOpacity>
+
+                {/* OTP Info */}
+                <View style={styles.otpInfoContainer}>
+                  <Text style={styles.otpTitle}>Código enviado</Text>
+                  <Text style={styles.otpSubtitle}>
+                    Ingresa el código de 6 dígitos enviado a {email}
+                  </Text>
+                </View>
+
+                {/* OTP Input */}
+                <View style={styles.otpContainer}>
+                  {otp.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      ref={(ref) => (inputRefs.current[index] = ref)}
+                      style={styles.otpInput}
+                      value={digit}
+                      onChangeText={(value) => handleOtpChange(index, value)}
+                      onKeyPress={({ nativeEvent }) => handleOtpKeyPress(index, nativeEvent.key)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      selectTextOnFocus
+                    />
+                  ))}
+                </View>
+
+                {/* Timer or Resend */}
+                {otpTimer > 0 ? (
+                  <Text style={styles.timerText}>
+                    Reenviar código en {otpTimer}s
+                  </Text>
+                ) : (
+                  <TouchableOpacity onPress={handleSendOtp} disabled={isLoading}>
+                    <Text style={styles.resendText}>Reenviar código</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Verify Button */}
+                <TouchableOpacity
+                  style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                  onPress={handleVerifyOtp}
+                  disabled={isLoading || otp.join('').length !== 6}
+                >
+                  <Text style={styles.loginButtonText}>
+                    {isLoading ? 'Verificando...' : 'Verificar código'}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </View>
@@ -386,5 +471,62 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     marginRight: 8,
+  },
+  // OTP Styles
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  otpInfoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  otpTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  otpSubtitle: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 30,
+  },
+  otpInput: {
+    width: 45,
+    height: 55,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#9C27B9',
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  timerText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  resendText: {
+    color: '#9C27B9',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontWeight: '600',
   },
 });

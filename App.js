@@ -35,7 +35,7 @@ function MainTabNavigator() {
           let iconName;
 
           if (route.name === 'Home') {
-            iconName = 'home';
+            iconName = 'home-filled';
           } else if (route.name === 'Explore') {
             iconName = 'person-outline';
           } else if (route.name === 'Matches') {
@@ -50,9 +50,9 @@ function MainTabNavigator() {
             return (
               <View style={{
                 backgroundColor: '#BA68C8',
-                borderRadius: 22,
-                width: 44,
-                height: 44,
+                borderRadius: 14,
+                width: 40,
+                height: 40,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
@@ -60,20 +60,20 @@ function MainTabNavigator() {
               </View>
             );
           }
-          return <MaterialIcons name={iconName} size={20} color="rgba(255,255,255,0.4)" />;
+          return <MaterialIcons name={iconName} size={20} color="rgba(255,255,255,0.35)" />;
         },
         tabBarActiveTintColor: '#BA68C8',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.35)',
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#0d0d18',
+          backgroundColor: 'rgba(13, 13, 24, 0.95)',
           borderTopWidth: 0,
           paddingBottom: 5,
           paddingTop: 5,
-          height: 65,
-          marginHorizontal: 12,
-          marginBottom: 15,
-          borderRadius: 40,
+          height: 55,
+          marginHorizontal: 20,
+          marginBottom: 20,
+          borderRadius: 30,
           position: 'absolute',
         },
         headerShown: false,
@@ -82,7 +82,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Explore" component={MatchesScreen} />
       <Tab.Screen name="Matches" component={ChatScreen} />
-      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Chat" component={PublicChatsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

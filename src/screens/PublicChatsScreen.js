@@ -14,61 +14,31 @@ import { MaterialIcons } from '@expo/vector-icons';
 const mockChatRooms = [
   {
     id: 1,
-    name: 'Parejas Bogotá',
-    description: 'Chat para parejas en Bogotá',
-    members: 128,
-    online: 34,
-    icon: 'location-city',
-    color: '#BA68C8',
+    name: 'Parejas',
+    description: 'Sala exclusiva para parejas.',
+    current: 38,
+    max: 100,
   },
   {
     id: 2,
-    name: 'Singles Medellín',
-    description: 'Conoce singles en Medellín',
-    members: 95,
-    online: 22,
-    icon: 'person',
-    color: '#7C4DFF',
+    name: 'Solos y solas',
+    description: 'Sala exclusiva para singles y mujeres.',
+    current: 23,
+    max: 100,
   },
   {
     id: 3,
-    name: 'Eventos y Fiestas',
-    description: 'Organiza y encuentra eventos',
-    members: 256,
-    online: 67,
-    icon: 'celebration',
-    color: '#FF7043',
-  },
-  {
-    id: 4,
-    name: 'Viajes en Pareja',
-    description: 'Comparte experiencias de viaje',
-    members: 189,
-    online: 45,
-    icon: 'flight',
-    color: '#26A69A',
-  },
-  {
-    id: 5,
-    name: 'Citas y Consejos',
-    description: 'Tips para tus citas',
-    members: 312,
-    online: 89,
-    icon: 'favorite',
-    color: '#EC407A',
-  },
-  {
-    id: 6,
-    name: 'Nuevos Miembros',
-    description: 'Bienvenidos a Venux',
-    members: 78,
-    online: 15,
-    icon: 'waving-hand',
-    color: '#FFA726',
+    name: 'Mixta',
+    description: 'Sala para todos, son bienvenidos parejas, solteros y mujeres.',
+    current: 110,
+    max: 300,
   },
 ];
 
+const TABS = ['Disponibles', 'Abiertos'];
+
 export default function PublicChatsScreen({ navigation }) {
+  const [activeTab, setActiveTab] = useState('Disponibles');
   const [chatRooms] = useState(mockChatRooms);
 
   const renderChatRoom = ({ item }) => (
@@ -76,28 +46,20 @@ export default function PublicChatsScreen({ navigation }) {
       style={styles.chatRoomCard}
       onPress={() => {/* Navigate to chat room */}}
     >
-      <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-        <MaterialIcons name={item.icon} size={24} color="#fff" />
-      </View>
+      <View style={styles.iconPlaceholder} />
       
       <View style={styles.chatRoomInfo}>
-        <Text style={styles.chatRoomName}>{item.name}</Text>
-        <Text style={styles.chatRoomDescription} numberOfLines={1}>
-          {item.description}
-        </Text>
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <MaterialIcons name="people" size={14} color="rgba(255,255,255,0.5)" />
-            <Text style={styles.statText}>{item.members}</Text>
-          </View>
-          <View style={styles.stat}>
-            <View style={styles.onlineDot} />
-            <Text style={styles.statText}>{item.online} online</Text>
+        <View style={styles.chatRoomHeader}>
+          <Text style={styles.chatRoomName}>{item.name}</Text>
+          <View style={styles.membersContainer}>
+            <MaterialIcons name="people-outline" size={16} color="rgba(255,255,255,0.5)" />
+            <Text style={styles.membersText}>{item.current} / {item.max}</Text>
           </View>
         </View>
+        <Text style={styles.chatRoomDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
       </View>
-      
-      <MaterialIcons name="chevron-right" size={24} color="rgba(255,255,255,0.3)" />
     </TouchableOpacity>
   );
 
@@ -107,22 +69,23 @@ export default function PublicChatsScreen({ navigation }) {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chats Públicos</Text>
-        <TouchableOpacity style={styles.searchButton}>
-          <MaterialIcons name="search" size={24} color="rgba(255,255,255,0.7)" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Chat público</Text>
       </View>
 
-      {/* Subtitle */}
-      <Text style={styles.subtitle}>
-        Únete a salas de chat y conoce personas con intereses similares
-      </Text>
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        {TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.tabActive]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Chat Rooms List */}
       <FlatList
@@ -133,12 +96,6 @@ export default function PublicChatsScreen({ navigation }) {
         contentContainerStyle={styles.chatRoomsContent}
         showsVerticalScrollIndicator={false}
       />
-
-      {/* Create Room Button */}
-      <TouchableOpacity style={styles.createButton}>
-        <MaterialIcons name="add" size={24} color="#fff" />
-        <Text style={styles.createButtonText}>Crear sala</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -149,36 +106,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#0A0A23',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
-  searchButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
-    paddingHorizontal: 16,
+  tabsContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
     marginBottom: 20,
+    backgroundColor: '#3d3d5c',
+    borderRadius: 25,
+    padding: 3,
+    alignSelf: 'flex-start',
+  },
+  tab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+  },
+  tabActive: {
+    backgroundColor: '#0d0d1a',
+  },
+  tabText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 13,
+  },
+  tabTextActive: {
+    color: '#fff',
+    fontWeight: '500',
   },
   chatRoomsList: {
     flex: 1,
@@ -189,68 +149,49 @@ const styles = StyleSheet.create({
   },
   chatRoomCard: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: 16,
     backgroundColor: '#1a1a2e',
     borderRadius: 16,
     marginBottom: 12,
   },
-  iconContainer: {
+  iconPlaceholder: {
     width: 50,
     height: 50,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#0d0d1a',
     marginRight: 14,
   },
   chatRoomInfo: {
     flex: 1,
   },
+  chatRoomHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   chatRoomName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
-    marginBottom: 4,
+  },
+  membersContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  membersText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.6)',
+    marginLeft: 4,
   },
   chatRoomDescription: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.5)',
-    marginBottom: 6,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  statText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-    marginLeft: 4,
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4CAF50',
-  },
-  createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#BA68C8',
-    marginHorizontal: 16,
-    marginBottom: 100,
-    paddingVertical: 16,
-    borderRadius: 14,
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    lineHeight: 18,
   },
 });

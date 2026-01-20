@@ -15,52 +15,42 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 
+const COUNTRY_CODES = [
+  { code: '+57', country: 'CO', flag: '🇨🇴' },
+  { code: '+1', country: 'US', flag: '🇺🇸' },
+  { code: '+52', country: 'MX', flag: '🇲🇽' },
+  { code: '+34', country: 'ES', flag: '🇪🇸' },
+];
+
 export default function RegisterScreen({ navigation }) {
   const [formData, setFormData] = useState({
-    name: '',
+    countryCode: '+57',
+    phone: '',
     email: '',
-    password: '',
-    confirmPassword: '',
-    age: '',
-    location: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleRegister = async () => {
-    const { name, email, password, confirmPassword, age, location } = formData;
+  const handleContinue = async () => {
+    const { phone, email } = formData;
 
-    if (!name || !email || !password || !confirmPassword || !age || !location) {
+    if (!phone || !email) {
       Alert.alert('Error', 'Por favor completa todos los campos');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Registrar con email OTP (sin contraseña)
+      const { data, error } = await supabase.auth.signInWithOtp({
         email,
-        password,
         options: {
           data: {
-            name,
-            age: parseInt(age),
-            location,
+            phone: `${formData.countryCode}${phone}`,
           },
         },
       });
@@ -69,8 +59,8 @@ export default function RegisterScreen({ navigation }) {
 
       setIsLoading(false);
       Alert.alert(
-        '¡Registro exitoso!',
-        'Te hemos enviado un email de confirmación. Por favor verifica tu correo.',
+        '¡Código enviado!',
+        'Te hemos enviado un código de verificación a tu correo.',
         [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
       );
     } catch (error) {
@@ -87,154 +77,74 @@ export default function RegisterScreen({ navigation }) {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-              >
-                <MaterialIcons name="arrow-back" size={24} color="#fff" />
-              </TouchableOpacity>
+        <View style={styles.content}>
+          {/* Header */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <MaterialIcons name="arrow-back" size={20} color="#BA68C8" />
+            <Text style={styles.backText}>Atrás</Text>
+          </TouchableOpacity>
+
+          {/* Title */}
+          <Text style={styles.title}>Crear una cuenta en Venux</Text>
+
+          {/* Form Card */}
+          <View style={styles.formCard}>
+            {/* Country Code */}
+            <Text style={styles.inputLabel}>Indicativo <Text style={styles.required}>*</Text></Text>
+            <TouchableOpacity style={styles.selectContainer}>
+              <Text style={styles.selectText}>CO  {formData.countryCode}</Text>
+              <MaterialIcons name="keyboard-arrow-down" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Phone */}
+            <Text style={styles.inputLabel}>Número de celular <Text style={styles.required}>*</Text></Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="smartphone" size={20} color="rgba(255,255,255,0.5)" />
+              <TextInput
+                style={styles.input}
+                placeholder="Ingresa tu número"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={formData.phone}
+                onChangeText={(value) => handleInputChange('phone', value)}
+                keyboardType="phone-pad"
+              />
             </View>
 
-            {/* Title */}
-            <Text style={styles.title}>Crear cuenta</Text>
-            <Text style={styles.subtitle}>Completa tus datos para unirte a Venux</Text>
-
-            {/* Register Form */}
-            <View style={styles.formContainer}>
-              <Text style={styles.inputLabel}>Nombre</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Tu nombre completo"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={formData.name}
-                  onChangeText={(value) => handleInputChange('name', value)}
-                  autoCapitalize="words"
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="tu@email.com"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={formData.email}
-                  onChangeText={(value) => handleInputChange('email', value)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.rowInputs}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.inputLabel}>Edad</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="25"
-                      placeholderTextColor="rgba(255,255,255,0.4)"
-                      value={formData.age}
-                      onChangeText={(value) => handleInputChange('age', value)}
-                      keyboardType="numeric"
-                      maxLength={2}
-                    />
-                  </View>
-                </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.inputLabel}>Ciudad</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Tu ciudad"
-                      placeholderTextColor="rgba(255,255,255,0.4)"
-                      value={formData.location}
-                      onChangeText={(value) => handleInputChange('location', value)}
-                      autoCapitalize="words"
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <Text style={styles.inputLabel}>Contraseña</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Mínimo 6 caracteres"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange('password', value)}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <MaterialIcons
-                    name={showPassword ? 'visibility' : 'visibility-off'}
-                    size={20}
-                    color="rgba(255,255,255,0.5)"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.inputLabel}>Confirmar contraseña</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Repite tu contraseña"
-                  placeholderTextColor="rgba(255,255,255,0.4)"
-                  value={formData.confirmPassword}
-                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <MaterialIcons
-                    name={showConfirmPassword ? 'visibility' : 'visibility-off'}
-                    size={20}
-                    color="rgba(255,255,255,0.5)"
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
-                onPress={handleRegister}
-                disabled={isLoading}
-              >
-                <Text style={styles.registerButtonText}>
-                  {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Terms */}
-              <Text style={styles.termsText}>
-                Al registrarte, aceptas nuestros{' '}
-                <Text style={styles.termsLink}>Términos</Text>
-                {' '}y{' '}
-                <Text style={styles.termsLink}>Privacidad</Text>
-              </Text>
-            </View>
-
-            {/* Login Link */}
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginLink}>Inicia sesión</Text>
-              </TouchableOpacity>
+            {/* Email */}
+            <Text style={styles.inputLabel}>Correo electrónico <Text style={styles.required}>*</Text></Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="mail-outline" size={20} color="rgba(255,255,255,0.5)" />
+              <TextInput
+                style={styles.input}
+                placeholder="Ingresa tu correo"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={formData.email}
+                onChangeText={(value) => handleInputChange('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
             </View>
           </View>
-        </ScrollView>
+
+          {/* Spacer */}
+          <View style={{ flex: 1 }} />
+
+          {/* Continue Button */}
+          <TouchableOpacity
+            style={[styles.continueButton, isLoading && styles.continueButtonDisabled]}
+            onPress={handleContinue}
+            disabled={isLoading}
+          >
+            <Text style={styles.continueButtonText}>
+              {isLoading ? 'Enviando...' : 'Continuar'}
+            </Text>
+            <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -248,108 +158,88 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-  },
-  header: {
     paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 30,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
     marginBottom: 30,
   },
-  formContainer: {
-    flex: 1,
+  backText: {
+    color: '#BA68C8',
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  formCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#BA68C8',
   },
   inputLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
     marginBottom: 8,
+    marginTop: 16,
+  },
+  required: {
+    color: '#BA68C8',
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 12,
+  },
+  selectText: {
+    color: '#fff',
+    fontSize: 16,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(156, 39, 176, 0.3)',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 8,
   },
   input: {
     flex: 1,
     fontSize: 16,
     color: '#fff',
-    paddingVertical: 14,
+    marginLeft: 12,
+    paddingVertical: 8,
   },
-  rowInputs: {
+  continueButton: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  halfInput: {
-    flex: 1,
-  },
-  eyeButton: {
-    padding: 5,
-  },
-  registerButton: {
     backgroundColor: '#BA68C8',
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    justifyContent: 'center',
   },
-  registerButtonDisabled: {
+  continueButtonDisabled: {
     opacity: 0.7,
   },
-  registerButtonText: {
+  continueButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  termsText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  termsLink: {
-    color: '#BA68C8',
-  },
-  loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 30,
-  },
-  loginText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
-  },
-  loginLink: {
-    color: '#BA68C8',
-    fontSize: 14,
-    fontWeight: '600',
+    marginRight: 8,
   },
 });

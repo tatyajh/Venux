@@ -156,11 +156,11 @@ export default function LoginScreen({ navigation }) {
                 {/* Input Form - Email */}
                 <View style={styles.inputForm}>
                   <View style={styles.emailInputContainer}>
-                    <MaterialIcons name="email" size={20} color="#8B5CF6" style={styles.inputIcon} />
+                    <MaterialIcons name="email" size={20} color="#9C27B9" style={styles.inputIcon} />
                     <TextInput
                       style={styles.emailInput}
-                      placeholder="Ingresa tu correo"
-                      placeholderTextColor="#999"
+                      placeholder="Email"
+                      placeholderTextColor="rgba(255,255,255,0.5)"
                       value={email}
                       onChangeText={setEmail}
                       keyboardType="email-address"
@@ -182,24 +182,22 @@ export default function LoginScreen({ navigation }) {
                     </Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.googleButton}
-                    onPress={() => handleSocialLogin('Google')}
-                  >
-                    <View style={styles.googleIconContainer}>
-                      <Text style={styles.googleIcon}>G</Text>
-                    </View>
-                    <Text style={styles.googleButtonText}>Iniciar sesión con Google</Text>
-                  </TouchableOpacity>
                 </View>
 
                 {/* Register Link */}
+                <View style={styles.registerLinkContainer}>
+                  <Text style={styles.registerQuestion}>¿No tienes una cuenta? </Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <Text style={styles.registerLink}>Crear una cuenta</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* DEV Quick Login */}
                 <TouchableOpacity 
-                  style={styles.registerLinkContainer}
-                  onPress={() => navigation.navigate('Register')}
+                  style={styles.devButton}
+                  onPress={() => navigation.replace('Main')}
                 >
-                  <Text style={styles.registerText}>Crear una cuenta</Text>
-                  <MaterialIcons name="add" size={20} color="#fff" />
+                  <Text style={styles.devButtonText}>DEV: Quick Login</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -345,9 +343,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   inputForm: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 15,
-    padding: 20,
     marginBottom: 30,
   },
   countryCodeContainer: {
@@ -382,10 +377,12 @@ const styles = StyleSheet.create({
   emailInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#9C27B9',
     paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   inputIcon: {
     marginRight: 15,
@@ -398,7 +395,7 @@ const styles = StyleSheet.create({
   emailInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
   buttonsContainer: {
     marginBottom: 40,
@@ -465,12 +462,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 30,
+    marginBottom: 20,
   },
-  registerText: {
+  registerQuestion: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 14,
+  },
+  registerLink: {
     color: '#fff',
-    fontSize: 16,
-    marginRight: 8,
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  devButton: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  devButtonText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
   },
   // OTP Styles
   backButton: {

@@ -109,7 +109,7 @@ export default function HomeScreen({ navigation }) {
     <TouchableOpacity 
       key={user.id} 
       style={styles.profileCard}
-      onPress={() => {/* Navigate to profile */}}
+      onPress={() => navigation.navigate('UserProfile', { user })}
     >
       {user.photo ? (
         <Image source={{ uri: user.photo }} style={styles.profileImage} />

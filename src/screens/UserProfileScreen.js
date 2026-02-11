@@ -161,7 +161,10 @@ export default function UserProfileScreen({ route, navigation }) {
           <MaterialIcons name="favorite" size={28} color="#fff" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('ChatConversation', { conversation: profileData })}
+        >
           <MaterialIcons name="chat-bubble-outline" size={24} color="#BA68C8" />
         </TouchableOpacity>
       </View>

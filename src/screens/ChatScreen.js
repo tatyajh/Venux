@@ -94,7 +94,7 @@ export default function ChatScreen({ navigation }) {
   const renderConversation = ({ item }) => (
     <TouchableOpacity 
       style={styles.conversationItem}
-      onPress={() => {/* Navigate to chat */}}
+      onPress={() => navigation.navigate('ChatConversation', { conversation: item })}
     >
       <View style={styles.avatarContainer}>
         {item.photo ? (
